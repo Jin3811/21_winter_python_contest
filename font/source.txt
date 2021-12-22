@@ -1,0 +1,1 @@
+font source: https://github.com/gabrielecirulli/2048/tree/master/style/fonts (2048 origin maker's source, ClearSans-Bold-webfont)
