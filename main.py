@@ -47,7 +47,7 @@ def gameInit():
     boardLabel = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     cnt = randint(1,2)
     
-    while (i < cnt):
+    while i < cnt:
         x, y = randint(0, 3), randint(0, 3)
         
         if board[y][x] == 0 : # 중복방지
@@ -56,22 +56,86 @@ def gameInit():
         else : # 중복된 블럭을 선택했다면 다시 한다.
             i -= 1
     label_gameover.place(x = 3000, y = 3000)
+
+def rotate(n):
+    global board
+    templist = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
+    
+    # n번 회전한다.
+    while n != 0:
+        # board의 원형을 복사한다.
+        for y in range(4):
+            for x in range(4):
+                templist[y][x] = board[y][x]
         
-def rotateUp(event):
-    pass
+        # 시계방향 90도 회전시킨다.
+        for y in range(4):
+            for x in range(4):
+                board[x][3 - y] = templist[y][x]
+        
+        n -= 1
+    
+def moveBlock(): # 모든 블록을 위로 올리는 함수.
+    global board, score
+    is_moved = False # 이동이 있었는지 검사하는 변수
+    is_plus = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]] # 합쳐진 블럭의 위치를 저장할 리스트
+    tempYcor = -1 # 자신의 윗 블럭의 y좌표를 저장할 변수
+    
+    for y in range(4):
+        for x in range(4):
+            if board[y][x] != 0: # 숫자 블록이라면
+                tempYcor = y - 1 # board[y][x]의 윗블록을 지정
+                
+                while tempYcor > 0 and board[tempYcor][x] == 0: # 윗 블록이 최상단이 아니고, 빈 블럭이라면 
+                    tempYcor -= 1 # 그 윗블록으로 이동 -> 이 과정을 통해, 최상단에 도달하거나, 숫자블록의 위치를 알게 된다.
+                
+                if board[tempYcor][x] == 0: # 이 경우에 잡히는 경우는, board[y][x]의 위에 아무 블록도 없는 경우이다.
+                    board[tempYcor][x] = board[y][x] # 숫자를 이동시키고,
+                    board[y][x] = 0 # 원래 위치를 비운다.
+                    is_moved = True # 이동이 발생했으므로 true를 대입
+                
+                elif board[tempYcor][x] != board[y][x]: # board[y][x] 위에 블럭이 있고, 이 블럭이 자신과 숫자가 같지 않다면
+                    if (tempYcor == y - 1): # 그 블록이 board[y][x]의 바로 위에 있다면,
+                        continue # 반복문으로 돌아간다
+                    
+                    else : # 바로 위의 블록이 아니라면,
+                        board[tempYcor + 1][x] = board[y][x] # 숫자가 다르기 때문에, 합치지 않고, 그 밑으로 이동시킨다.
+                        board[y][x] = 0 # 원래 위치는 비운다.
+                        is_moved = True # 이동이 발생했으므로 true를 대입
 
-def rotateDown(event):
-    pass
+                else : # board[y][x] 위에 블럭이 있고 숫자가 같다면,
+                    if is_plus[tempYcor][x] == 0: # 합쳐지지 않은 블럭이라면
+                        board[tempYcor][x] *= 2 # 블럭을 합친다.
+                        board[y][x] = 0 # 원래 위치는 비운다.
+                        score += board[tempYcor][x] # 만들어낸 블럭의 숫자만큼 점수 증가
+                        is_moved = True # 이동이 발생했으므로 true를 대입
+                    
+                    else : # 이전에 합쳐진 블럭이라면
+                        board[tempYcor + 1][x] = board[y][x] # 합쳐졌던 블럭에는 합치면 안되므로, 그 아래로 이동한다.
+                        board[y][x] = 0 # 원래 위치는 비운다.
+                        is_moved = True # 이동이 발생했으므로 true를 대입
+                        
+def rotateUp():
+    moveBlock()
+    display()
 
-def rotateLeft(event):
-    pass
+def rotateDown():
+    rotate(2)
+    moveBlock()
+    rotate(2)
+    display()
 
-def rotateRight(event):
-    pass
+def rotateLeft():
+    rotate(1)
+    moveBlock()
+    rotate(3)
+    display()
 
-def newGameStart():
-    pass
-
+def rotateRight():
+    rotate(3)
+    moveBlock()
+    rotate(1)
+    display()
 
 board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 boardLabel = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -120,14 +184,14 @@ label_gameover = Label(tk, text = "Game Over!!", font = gamefont, width = 40, he
 label_guide = Label(tk, text = "please, download font,\nGameBold2048.ttf", font = ("GameBold2048", 16) , bg = "#f9f6f2", fg = "black")
 label_gameboard = Label(tk, width = 71, height = 30, bg = "#bbada0")
 
-label_bg.place(x = 0, y = 0)
+# label_bg.place(x = 0, y = 0)
 label_title.place(x = 73, y = 61)
 label_scoreboard.place(x = 341, y = 60)
 label_maxScoreboard.place(x = 478, y = 60)
 label_score.place(x = 341, y = 133)
 label_maxScore.place(x = 478, y = 133) # 137
 label_guide.place(x = 73, y = 210)
-label_gameboard.place(x = 55, y = 300)
+# label_gameboard.place(x = 55, y = 300)
 # label_gameover.place(x = 0, y = 530)
 
 # remote window setup
