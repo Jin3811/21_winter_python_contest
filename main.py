@@ -4,13 +4,14 @@
 
 from tkinter import *
 from tkinter import font
-from random import *
+from random import randint
 
 def whereis(event): 
     print(event.x, " ", event.y)
 
 def is_GameOver():
     global board
+    return False
 
 def generateNumberBlock(): 
     temp = randint(1, 10)
@@ -18,35 +19,35 @@ def generateNumberBlock():
     else : return 4
 
 def display():
-    if (is_GameOver()):
+    if is_GameOver():
         label_gameover.place(x = 0, y = 530)
     else :
         global board, boardLabel
-        xlist = [66, 211, 356, 479]
-        ylist = [357, 622, 765, 886]
         for y in range(4):
             for x in range(4):
                 if board[y][x] == 0:
                     pass
                 elif board[y][x] <= 2048:
-                    boardLabel[y][x] = numBlockData[board[y][x]]
+                    blockData = numBlockData[board[y][x]]
+                    boardLabel[y][x].config(text = blockData[0], bg = blockData[1], fg = blockData[2])
                 else:
-                    boardLabel[y][x] = numBlockData["super"]
-                    boardLabel[y][x].config(text=str(board[y][x]))
-                    
-        for ycor in range(4):
-            for xcor in range(4):
-                if not board[ycor][xcor] == 0:
-                    boardLabel[ycor][xcor].place(x = xlist[xcor], y = ylist[ycor])
+                    blockData = numBlockData["super"]
+                    boardLabel[y][x].config(text=str(board[y][x]), bg = blockData[1], fg = blockData[2])
+    print(board)
+    label_score.config(text = str(score))
 
 def gameInit():
     global board, score, boardLabel
     i = 0
     score = 0
-    board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    boardLabel = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    cnt = randint(1,2)
+        
+    blockdata = numBlockData[0]
+    for y in range(4):
+        for x in range(4):
+            board[y][x] = 0
+            boardLabel[y][x].config(text = blockdata[0], bg = blockdata[1], fg = blockdata[2])
     
+    cnt = randint(1,2)
     while i < cnt:
         x, y = randint(0, 3), randint(0, 3)
         
@@ -56,13 +57,15 @@ def gameInit():
         else : # 중복된 블럭을 선택했다면 다시 한다.
             i -= 1
     label_gameover.place(x = 3000, y = 3000)
+    display()
 
 def rotate(n):
     global board
-    templist = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
     
     # n번 회전한다.
     while n != 0:
+        templist = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]]
+        
         # board의 원형을 복사한다.
         for y in range(4):
             for x in range(4):
@@ -95,7 +98,7 @@ def moveBlock(): # 모든 블록을 위로 올리는 함수.
                     is_moved = True # 이동이 발생했으므로 true를 대입
                 
                 elif board[tempYcor][x] != board[y][x]: # board[y][x] 위에 블럭이 있고, 이 블럭이 자신과 숫자가 같지 않다면
-                    if (tempYcor == y - 1): # 그 블록이 board[y][x]의 바로 위에 있다면,
+                    if tempYcor == y - 1: # 그 블록이 board[y][x]의 바로 위에 있다면,
                         continue # 반복문으로 돌아간다
                     
                     else : # 바로 위의 블록이 아니라면,
@@ -114,6 +117,12 @@ def moveBlock(): # 모든 블록을 위로 올리는 함수.
                         board[tempYcor + 1][x] = board[y][x] # 합쳐졌던 블럭에는 합치면 안되므로, 그 아래로 이동한다.
                         board[y][x] = 0 # 원래 위치는 비운다.
                         is_moved = True # 이동이 발생했으므로 true를 대입
+    if is_moved:
+        while True:
+            x, y = randint(0, 3), randint(0, 3)
+            if board[y][x] == 0: break
+        board[y][x] = generateNumberBlock()
+            
                         
 def rotateUp():
     moveBlock()
@@ -123,8 +132,8 @@ def rotateDown():
     rotate(2)
     moveBlock()
     rotate(2)
-    display()
 
+    display()
 def rotateLeft():
     rotate(1)
     moveBlock()
@@ -138,7 +147,6 @@ def rotateRight():
     display()
 
 board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-boardLabel = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 scoreMax = 0
 score = 0
 tk = Tk() # main window
@@ -150,25 +158,27 @@ gamefont = font.Font(family = "GameBold2048", size = 22)
 
 
 numBlockData = {
-    0 : Label(tk, width = 7, height = 3, bg = "#cdc1b4", ),
-    2 : Label(tk, text = "2", font = gamefont, width = 7, height = 3, bg = "#eee4da", fg = "black"),
-    4 : Label(tk, text = "4", font = gamefont, width = 7, height = 3, bg = "#ede0c8", fg = "black"),
-    8 : Label(tk, text = "8", font = gamefont, width = 7, height = 3, bg = "#f2b179", fg = "#f9f6f2"),
-    16 : Label(tk, text = "16", font = gamefont, width = 7, height = 3, bg = "#f59563", fg = "#f9f6f2"),
-    32 : Label(tk, text = "32", font = gamefont, width = 7, height = 3, bg = "#f67c5f", fg = "#f9f6f2"),
-    64 : Label(tk, text = "64", font = gamefont, width = 7, height = 3, bg = "#f65e3b", fg = "#f9f6f2"),
-    128 : Label(tk, text = "128", font = gamefont, width = 7, height = 3, bg = "#edcf72", fg = "#f9f6f2"),
-    256 : Label(tk, text = "256", font = gamefont, width = 7, height = 3, bg = "#edcc61", fg = "#f9f6f2"),
-    512 : Label(tk, text = "512", font = gamefont, width = 7, height = 3, bg = "#edc850", fg = "#f9f6f2"),
-    1024 : Label(tk, text = "1024", font = gamefont, width = 7, height = 3, bg = "#edc53f", fg = "#f9f6f2"),
-    2048 : Label(tk, text = "2048", font = gamefont, width = 7, height = 3, bg = "#edc22e", fg = "#f9f6f2"),
-    "super" : Label(tk, text = "super", font = gamefont, width = 7, height = 3, bg = "#3c3a32", fg = "#f9f6f2") # if (tile > 2048) == True
+    # (text, bg, fg) -> tuple
+    0 : (" ", "#cdc1b4", "black"),
+    2 : ("2", "#eee4da", "black"),
+    4 : ("4", "#ede0c8", "black"),
+    8 : ("8", "#f2b179", "#f9f6f2"),
+    16 : ("16", "#f59563", "#f9f6f2"),
+    32 : ("32", "#f67c5f", "#f9f6f2"),
+    64 : ("64", "#f65e3b", "#f9f6f2"),
+    128 : ("128", "#edcf72", "#f9f6f2"),
+    256 : ("256", "#edcc61", "#f9f6f2"),
+    512 : ("512", "#edc850", "#f9f6f2"),
+    1024 : ("1024", "#edc53f", "#f9f6f2"),
+    2048 : ("2048", "#edc22e", "#f9f6f2"),
+    "super" : ("super", "#3c3a32", "#f9f6f2") # if (tile > 2048) == True
 }
 
 # window setup
 tk.title("2048!")
 remote.title("2048! remote")
-tk.geometry("688x900+100+0")
+# tk.geometry("688x900+100+0")
+tk.geometry("688x989+100+0")
 remote.geometry("500x400+1000+350")
 tk.resizable(False, False)
 remote.resizable(False, False)
@@ -183,16 +193,47 @@ label_maxScoreboard = Label(tk, text = "BEST", font = gamefont, width = 7, heigh
 label_gameover = Label(tk, text = "Game Over!!", font = gamefont, width = 40, height = 3)
 label_guide = Label(tk, text = "please, download font,\nGameBold2048.ttf", font = ("GameBold2048", 16) , bg = "#f9f6f2", fg = "black")
 label_gameboard = Label(tk, width = 71, height = 30, bg = "#bbada0")
+# label_block_1_1 = Label(label_gameboard, text = " ", font = gamefont, width = 7, height = 3) # 신기하게도 tk 윈도우가 아니라 라벨 객체에도 또다른 라벨을 입히는게 가능한 모습.
+label_block_1_1 = Label(tk, text = " ", font = gamefont, width = 7, height = 3) # 신기하게도 tk 윈도우가 아니라 라벨 객체에도 또다른 라벨을 입히는게 가능한 모습.
+label_block_1_2 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_1_3 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_1_4 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_2_1 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_2_2 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_2_3 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_2_4 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_3_1 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_3_2 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_3_3 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_3_4 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_4_1 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_4_2 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_4_3 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
+label_block_4_4 = Label(tk, text = " ", font = gamefont, width = 7, height = 3)
 
-# label_bg.place(x = 0, y = 0)
+boardLabel = [
+    [label_block_1_1, label_block_1_2, label_block_1_3, label_block_1_4],
+    [label_block_2_1, label_block_2_2, label_block_2_3, label_block_2_4],
+    [label_block_1_1, label_block_1_2, label_block_1_3, label_block_1_4],
+    [label_block_1_1, label_block_1_2, label_block_1_3, label_block_1_4],
+]
+
+xlist = [65, 211, 356, 501]
+ylist = [310, 622, 765, 886]
+
+label_bg.place(x = 0, y = 0)
 label_title.place(x = 73, y = 61)
 label_scoreboard.place(x = 341, y = 60)
 label_maxScoreboard.place(x = 478, y = 60)
 label_score.place(x = 341, y = 133)
 label_maxScore.place(x = 478, y = 133) # 137
 label_guide.place(x = 73, y = 210)
-# label_gameboard.place(x = 55, y = 300)
-# label_gameover.place(x = 0, y = 530)
+label_gameboard.place(x = 55, y = 300)
+
+for y in range(4):
+    for x in range(4):
+        boardLabel[y][x].place(x = xlist[x], y = ylist[y])
+
 
 # remote window setup
 button_up = Button(remote, text = "↑", font = ("GameBold2048", 14), bg = "black", fg = "white", width = 3, height = 3, command = rotateUp)
@@ -208,7 +249,6 @@ button_right.place(x = 220, y = 163)
 button_newGame.place(x = 307, y = 310)
 
 gameInit()
-display()
 
 tk.bind("<Button-1>", whereis)
 
