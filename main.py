@@ -290,9 +290,9 @@ label_guide.place(x = 73, y = 210)
 label_gameboard.place(x = 55, y = 300)
 
 # 반복문을 통해 배치한다
-for ycor in ylist:
-    for xcor in xlist:
-        boardLabel[ycor][xcor].place(x = xcor, y = ycor)
+for ycor in range(4):
+    for xcor in range(4):
+        boardLabel[ycor][xcor].place(x = xlist[xcor], y = ylist[ycor])
 
 # remote window setup
 button_up = Button(remote, text = "↑", font = ("GameBold2048", 14), bg = "black", fg = "white", width = 3, height = 3, command = rotateUp) # 윗 버튼

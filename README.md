@@ -5,3 +5,4 @@
 
 + 2048! game. made by Python3.9.7
 + design source (font, background): https://github.com/gabrielecirulli/2048/
++ https://codejin.tistory.com/121
